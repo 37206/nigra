@@ -8,8 +8,8 @@ post=urllib.parse.urlencode({'q':'1',
                              'al_frame':'1',
                              'from_host':'vk.com',
                              'act' : 'login',
-                             'email' :'a37206@gmail.com',
-                             'pass':'upyachka'})
+                             'email' :'',
+                             'pass':''})
 post=post.encode(encoding='utf_8')
 headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13 (.NET CLR 3.5.30729)',
                    'Connection' : 'close',
@@ -19,6 +19,18 @@ headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0
 req=urllib.request.Request(site,post,headers)
 #data=opener.open(req)
 data=urllib.request.urlopen(req)
-print(data.getheaders())
 #data=opener.open('http://m.vk.com',data=None)
-print(data.read().decode(encoding='cp1251'))
+html=data.read().decode(encoding='cp1251')
+start=html.index('''setCookieEx('sid',''')
+homeB=html.index('''parent.onLoginDone(\'''')
+homeE=html[homeB:].index(');')
+home=html[homeB+20:homeB+homeE-1]
+#print(html)
+cookie=html[start+18:start+80] #наша кука
+#print(cookie)
+req=urllib.request.Request('http://vk.com'+home,None,headers)
+req.add_header('Cookie','remixchk=5; '+cookie,
+               'remixsid='+cookie+';')
+data=urllib.request.urlopen(req)
+html=data.read().decode('cp1251')
+print(html)
