@@ -9,8 +9,8 @@ post=urllib.parse.urlencode({'q':'1',
                              'al_frame':'1',
                              'from_host':'vk.com',
                              'act' : 'login',
-                             'email' :'a37206@gmail.com',#login
-                             'pass':'upyachka'})#pass
+                             'email' :'',#login
+                             'pass':''})#pass
 post=post.encode(encoding='utf_8')
 headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13 (.NET CLR 3.5.30729)',
                    'Connection' : 'close',
@@ -18,32 +18,32 @@ headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0
                    'Cache-Control' : 'no-cache',
                   }
 req=urllib.request.Request(site,post,headers)
-#data=opener.open(req)
-data=urllib.request.urlopen(req)
+data=opener.open(req)
+#data=urllib.request.urlopen(req)
 #data=opener.open('http://m.vk.com',data=None)
 html=data.read().decode(encoding='cp1251')
 #print(html)
 home=re.search(r'''(?<=parent.onLoginDone\(\')/\w+''',html).group()#BLOOD FOR THE REGEX GOOOOD!11
-sid=re.search(r'''(?<='sid', ')\w+''',html).group()# OBEY REGEX!!!
-print(sid)
-
-
-
-post=urllib.parse.urlencode({'s':str(sid)})
+#sid=re.search(r'''(?<='sid', ')\w+''',html).group()# OBEY REGEX!!!
+cookie=re.search(r"remixsid=\w+;", str(data.info())).group() #ФАК ЙЕА REGEX!!!!1111111
+print(cookie)
+post=urllib.parse.urlencode({'s':home})
 post=post.encode(encoding='utf_8')
+#post=None
 headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
                    'Host' : 'vkontakte.ru',
                    'Referer' : 'http://login.vk.com/?act=login',
                    'Connection' : 'close',
-                   'Cookie' : 'remixchk=5; remixsid=nonenone',
+                   'Cookie' : 'remixchk=5;'+cookie,
                    'Pragma' : 'no-cache',
                    'Cache-Control' : 'no-cache'
                   }
 #наши куки не для скуки
-site='http://vk.com?op=slogin'
+site='http://vk.com'
 req=urllib.request.Request(site,post,headers)
-data=urllib.request.urlopen(req)
+#data=urllib.request.urlopen(req)
+data=opener.open(req)
 html=data.read().decode('cp1251')
-#cookie=re.sub(r"expires=.+\sdomain=.+",'', str(data.info())) #ФАК ЙЕА REGEX!!!!1111111
-print(str(data.info()))
+
+print(data.info())
 print(html)
