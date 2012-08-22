@@ -127,7 +127,7 @@ def group_search(keywords, cookie):
 
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
 proxy = None
-login = ('a37206@gmail.com', 'upyachka')
+login = ('', '')
 coo = VkAuth(proxy, *login)
 print(coo)
 
@@ -150,5 +150,5 @@ print(coo)
 #html = data.read().decode('cp1251')
 
 
-found=group_search(['кровь', 'кишки', 'распидорасило'], coo)    
+found=group_search(['самые', 'котятки', 'милые'], coo)    
 print(found)
