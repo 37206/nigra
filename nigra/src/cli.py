@@ -127,7 +127,7 @@ def group_search(keywords, cookie):
 
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
 proxy = None
-login = ('', '')
+login = ('введи_логин', 'введи_пароль')
 coo = VkAuth(proxy, *login)
 print(coo)
 
