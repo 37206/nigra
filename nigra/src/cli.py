@@ -65,16 +65,8 @@ def VkAuth(proxy=None, login=None, password=None):
     cookie = re.search(r"remixsid=\w+;", str(data.info())).group() #ФАК ЙЕА REGEX!!!!1111111
     post = urllib.parse.urlencode({'s':''})
     post = post.encode(encoding='utf_8')
-    headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
-                       'Host' : 'vkontakte.ru',
-                       'Referer' : 'http://login.vk.com/?act=login',
-                       'Connection' : 'close',
-                       'Cookie' : 'remixchk=5;' + cookie,
-                       'Pragma' : 'no-cache',
-                       'Cache-Control' : 'no-cache'
-                      }
-    return cookie
-
+    params=collections.namedtuple('params',['cookie', 'home'])
+    return params(cookie,home)
 
 def group_search(keywords, cookie):
     '''
@@ -87,10 +79,10 @@ def group_search(keywords, cookie):
         s += word + ' '
     print(s)
     headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
-                           'Host' : 'vkontakte.ru',
+                           'Host' : 'vk.com',
                            'Referer' : 'http://vk.com/groups',
                            'Connection' : 'close',
-                           'Cookie' : 'remixchk=5;' + cookie,
+                           'Cookie' : 'remixchk=5;' + params.cookie,
                            'Pragma' : 'no-cache',
                            'Cache-Control' : 'no-cache'
                           }
@@ -99,8 +91,7 @@ def group_search(keywords, cookie):
     post = urllib.parse.urlencode({'act':'server_search', 'al':'1', 'q':s})#волшебный пост
     post = post.encode(encoding='utf_8')
     req = urllib.request.Request(site, post, headers)
-    data = urllib.request.urlopen(req)
-    
+    data = urllib.request.urlopen(req)  
     html = parser.unescape(data.read().decode('cp1251'))
     html_pre = html.strip().splitlines()
     groups = []
@@ -123,13 +114,52 @@ def group_search(keywords, cookie):
     return groups
 
 
+def VkUpload(file,params):
+    '''грузилка изображений, например
+    '''
+    headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
+                       'Host' : 'vk.com',
+                       'Referer' : 'http://vk.com/',
+                       'Connection' : 'close',
+                       'Cookie' : 'remixchk=5;' + params.cookie,
+                       'Pragma' : 'no-cache',
+                       'Cache-Control' : 'no-cache'
+                      }
+    site='http://vk.com'
+    #post = urllib.parse.urlencode({'act':'server_search', 'al':'1', 'q':s})#волшебный пост
+    post = urllib.parse.urlencode({'s':''})
+    post = post.encode(encoding='utf_8')
+    req = urllib.request.Request(site, post, headers)
+    data = urllib.request.urlopen(req)  
+    html = data.read().decode('cp1251')
+    hash=re.search(r'''(?<="post_hash":")\w+''',html).group()
+    print(hash)
+    
+    post = urllib.parse.urlencode({'file':open(file, 'rb'),      'act': 'post',
+      'type': 'photos_upload',
+      'to_id': params.home,
+      'attach1_type': 'photos_list',
+      'attach1': 'photos',
+      'hash': hash} )
+    post = post.encode(encoding='utf_8')
+    site='http://cs315522.vk.com/upload.php'
+    req = urllib.request.Request(site, post, headers)
+    data = urllib.request.urlopen(req)  
+    html = data.read().decode('cp1251')
+    print(html)
+
+
+
+
 
 
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
-proxy = None
-login = ('введи_логин', 'введи_пароль')
-coo = VkAuth(proxy, *login)
-print(coo)
+#proxy = None
+login = ('a37206@gmail.com', 'upyachka')
+params = VkAuth(proxy, *login)
+print(params)
+file='./1.jpg'
+#VkUpload(file,coo)
 
 #
 ##===================
@@ -150,5 +180,8 @@ print(coo)
 #html = data.read().decode('cp1251')
 
 
-found=group_search(['самые', 'котятки', 'милые'], coo)    
-print(found)
+
+
+
+found=group_search(['самые', 'котятки', 'милые'], params)    
+VkUpload(file, params)
