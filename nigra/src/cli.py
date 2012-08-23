@@ -135,7 +135,7 @@ def VkUpload(file,params):
     hash=re.search(r'''(?<="post_hash":")\w+''',html).group()
     print(hash)
     
-    post = urllib.parse.urlencode({'file':open(file, 'rb'),      'act': 'post',
+    post = urllib.parse.urlencode({'photo':open(file, 'rb'),      'act': 'post',
       'type': 'photos_upload',
       'to_id': params.home,
       'attach1_type': 'photos_list',
@@ -155,7 +155,7 @@ def VkUpload(file,params):
 
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
 #proxy = None
-login = ('a37206@gmail.com', 'upyachka')
+login = ('', '')
 params = VkAuth(proxy, *login)
 print(params)
 file='./1.jpg'
