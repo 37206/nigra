@@ -58,7 +58,7 @@ def VkAuth(proxy=None, login=None, password=None):
     data = urllib.request.urlopen(req)
     html = data.read().decode(encoding='cp1251')
     try:
-        home = re.search(r'''(?<=parent.onLoginDone\(\')/\w+''', html).group() #BLOOD FOR THE REGEX GOOOOD!11
+        home = re.search(r'''(?<=parent.onLoginDone\(\'/)\w+''', html).group() #BLOOD FOR THE REGEX GOOOOD!11
     except AttributeError:
         print('VkAuth() Error: Authentication failed')
         return None        
@@ -117,6 +117,7 @@ def group_search(keywords, cookie):
 def VkUpload(file,params):
     '''грузилка изображений, например
     '''
+    import poster
     headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
                        'Host' : 'vk.com',
                        'Referer' : 'http://vk.com/',
@@ -125,8 +126,8 @@ def VkUpload(file,params):
                        'Pragma' : 'no-cache',
                        'Cache-Control' : 'no-cache'
                       }
-    site='http://vk.com'
     #post = urllib.parse.urlencode({'act':'server_search', 'al':'1', 'q':s})#волшебный пост
+    site='http://vk.com'
     post = urllib.parse.urlencode({'s':''})
     post = post.encode(encoding='utf_8')
     req = urllib.request.Request(site, post, headers)
@@ -134,15 +135,15 @@ def VkUpload(file,params):
     html = data.read().decode('cp1251')
     hash=re.search(r'''(?<="post_hash":")\w+''',html).group()
     print(hash)
-    
-    post = urllib.parse.urlencode({'photo':open(file, 'rb'),      'act': 'post',
+    print(params.home.lstrip('id'))
+    site='http://vk.com/al_wall.php'
+    post = urllib.parse.urlencode({'act': 'post',
       'type': 'photos_upload',
-      'to_id': params.home,
+      'to_id': params.home.strip('id'),
       'attach1_type': 'photos_list',
-      'attach1': 'photos',
+      'attach1': open(file, 'rb'),
       'hash': hash} )
     post = post.encode(encoding='utf_8')
-    site='http://cs315522.vk.com/upload.php'
     req = urllib.request.Request(site, post, headers)
     data = urllib.request.urlopen(req)  
     html = data.read().decode('cp1251')
@@ -155,7 +156,7 @@ def VkUpload(file,params):
 
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
 #proxy = None
-login = ('', '')
+login = ('a37206@gmail.com', 'upyachka')
 params = VkAuth(proxy, *login)
 print(params)
 file='./1.jpg'
