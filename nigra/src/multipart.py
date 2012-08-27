@@ -7,7 +7,7 @@ import itertools
 import email.generator
 import mimetypes
 from io import StringIO
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
 
 class MultiPartForm(object):
     """Accumulate the data to be used when posting a form."""

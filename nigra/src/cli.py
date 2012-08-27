@@ -88,8 +88,7 @@ def group_search(keywords, cookie):
                           }
     
     site = 'http://vk.com/al_groups.php'#поиск группы 
-    post = urllib.parse.urlencode({'act':'server_search', 'al':'1', 'q':s})#волшебный пост
-    post = post.encode(encoding='utf_8')
+    post = urllib.parse.urlencode({'act':'server_search', 'al':'1', 'q':s}).encode(encoding='utf_8')#волшебный пост
     req = urllib.request.Request(site, post, headers)
     data = urllib.request.urlopen(req)  
     html = parser.unescape(data.read().decode('cp1251'))
@@ -117,7 +116,7 @@ def group_search(keywords, cookie):
 def VkUpload(file,params):
     '''грузилка изображений, например
     '''
-    import poster
+    import multipart
     headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
                        'Host' : 'vk.com',
                        'Referer' : 'http://vk.com/',
@@ -127,14 +126,12 @@ def VkUpload(file,params):
                        'Cache-Control' : 'no-cache'
                       }
     #post = urllib.parse.urlencode({'act':'server_search', 'al':'1', 'q':s})#волшебный пост
-    site='http://vk.com'
-    post = urllib.parse.urlencode({'s':''})
-    post = post.encode(encoding='utf_8')
+    site='http://m.vk.com/album11888818_161787398?act=add&from=select'
+    post = urllib.parse.urlencode({'s':''}).encode(encoding='utf_8')
     req = urllib.request.Request(site, post, headers)
     data = urllib.request.urlopen(req)  
     html = data.read().decode('cp1251')
-    hash=re.search(r'''(?<="post_hash":")\w+''',html).group()
-    print(hash)
+    site=re.search(r'''(?<=<form action=")[^"]+''',html).group() #наш урл для загрузки фотачекк, мяффф
     print(params.home.lstrip('id'))
     site='http://vk.com/al_wall.php'
     post = urllib.parse.urlencode({'act': 'post',
@@ -147,7 +144,7 @@ def VkUpload(file,params):
     req = urllib.request.Request(site, post, headers)
     data = urllib.request.urlopen(req)  
     html = data.read().decode('cp1251')
-    print(html)
+#    print(html)
 
 
 
@@ -156,7 +153,7 @@ def VkUpload(file,params):
 
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
 #proxy = None
-login = ('a37206@gmail.com', 'upyachka')
+login = ('', '')
 params = VkAuth(proxy, *login)
 print(params)
 file='./1.jpg'
