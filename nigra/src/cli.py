@@ -45,20 +45,20 @@ def VkAuth(login=None, password=None):
                        'Cache-Control' : 'no-cache',
                       }
     #rewrite
-#    data = requests.post(site, params=post,proxies=proxy, headers=headers)   
-    data=requests.get('https://www.google.com:443',proxies=proxy)
+    data = requests.post(site, params=post,headers=headers,proxies=proxy,allow_redirects=True)
+#    data = requests.post(site, params=post, headers=headers, proxies=proxy)
 #    data = urllib.request.urlopen(req)
-    print(data.text)
-    sys.exit()
-    html = data.read().decode(encoding='cp1251')
+#    requests.Request.response.
+#    html = data.read().decode(encoding='cp1251')
     try:
-        home = re.search(r'''(?<=parent.onLoginDone\(\'/)\w+''', html).group() #BLOOD FOR THE REGEX GOOOOD!11
+        home = re.search(r'''(?<=parent.onLoginDone\(\'/)\w+''', data.text).group() #BLOOD FOR THE REGEX GOOOOD!11
     except AttributeError:
         print('VkAuth() Error: Authentication failed')
-        return None        
-    cookie = re.search(r"remixsid=\w+;", str(data.info())).group() #ФАК ЙЕА REGEX!!!!1111111
-    post = urllib.parse.urlencode({'s':''})
-    post = post.encode(encoding='utf_8')
+        return None      
+    print(data.cookies)  
+    cookie =data.cookies['remixsid']
+#    post = urllib.parse.urlencode({'s':''})
+#    post = post.encode(encoding='utf_8')
     params = collections.namedtuple('params', ['cookie', 'home'])
     return params(cookie, home)
 
@@ -76,16 +76,16 @@ def group_search(keywords, cookie):
                            'Host' : 'vk.com',
                            'Referer' : 'http://vk.com/groups',
                            'Connection' : 'close',
-                           'Cookie' : 'remixchk=5;' + params.cookie,
+                           'Cookie' : 'remixchk=5;' + 'remixsid='+params.cookie+';',
                            'Pragma' : 'no-cache',
                            'Cache-Control' : 'no-cache'
                           }
     
     site = 'http://vk.com/al_groups.php'#поиск группы 
-    post = urllib.parse.urlencode({'act':'server_search', 'al':'1', 'q':s}).encode(encoding='utf_8')#волшебный пост
-    req = urllib.request.Request(site, post, headers)
-    data = urllib.request.urlopen(req)  
-    html = parser.unescape(data.read().decode('cp1251'))
+    post = {'act':'server_search', 'al':'1', 'q':s}#волшебный пост
+#    req = urllib.request.Request(site, post, headers)
+    data = requests.post(site,post,headers=headers,proxies=proxy)  
+    html = parser.unescape(data.text)
     html_pre = html.strip().splitlines()
     groups = []
     line = 'd'
@@ -120,9 +120,9 @@ def VkUpload(file, params):
                       }
     #post = urllib.parse.urlencode({'act':'server_search', 'al':'1', 'q':s})#волшебный пост
     site = 'http://m.vk.com/album11888818_161787398?act=add&from=select'
-    post = urllib.parse.urlencode({'s':''}).encode(encoding='utf_8')
-    req = urllib.request.Request(site, post, headers)
-    data = urllib.request.urlopen(req)  
+#    post = urllib.parse.urlencode({'s':''}).encode(encoding='utf_8')
+#    req = urllib.request.Request(site, post, headers)
+#    data = urllib.request.urlopen(req)  
     html = data.read().decode('cp1251')
     site = re.search(r'''(?<=<form action=")[^"]+''', html).group() #наш урл для загрузки фотачекк, мяффф
     print(params.home.lstrip('id'))
@@ -144,13 +144,13 @@ def VkUpload(file, params):
 
 
 
-proxy = {'http':'127.0.0.1:3128','https':'127.0.0.1:3128'}
-#proxy = None
+proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
+proxy = None
 #if proxy is not None: 
 #    proxy_handler = urllib.request.ProxyHandler(proxy)
 #    opener = urllib.request.build_opener(proxy_handler)
 #    urllib.request.install_opener(opener)
-login = ('a37206@gmail.com', 'upyachka')
+login = ('', '')
 params = VkAuth(*login)
 print(params)
 file = './1.jpg'
@@ -179,4 +179,5 @@ file = './1.jpg'
 
 
 found = group_search(['самые', 'котятки', 'милые'], params)    
-VkUpload(file, params)
+print(found)
+#VkUpload(file, params)
