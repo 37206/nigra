@@ -20,7 +20,6 @@ con.commit()
 c.close()
 
 
-
 def VkAuth(login=None, password=None):
     '''
     Авторизация вконтактоты по хардкору без API
@@ -30,7 +29,7 @@ def VkAuth(login=None, password=None):
     class BaseAuthException(Exception): pass
     class LoginIsNone(BaseAuthException): pass
     class PasswordIsNone(BaseAuthException): pass
-    site = 'http://login.vk.com'#https!=squid
+    global req
     try:
         for name in ('password', 'login'):
             exec("if {0} is None:\n\traise {1}IsNone()".format(name, name.capitalize()))
@@ -38,30 +37,17 @@ def VkAuth(login=None, password=None):
         for name in ('Password', 'Login'):
             exec("if isinstance(err,{0}IsNone):\n\tprint('VkAuth() Error: {0} is empty')".format(name))
         return None
+    site = 'http://login.vk.com'#https!=squid
     post = {'q':'1', 'al_frame':'1', 'from_host':'vk.com', 'act' : 'login', 'email' :login, 'pass':password}
-#    post = requests.utils.(encoding='utf_8')
-    headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13 (.NET CLR 3.5.30729)',
-                       'Connection' : 'close',
-                       'Pragma' : 'no-cache',
-                       'Cache-Control' : 'no-cache',
-                      }
-    #rewrite
-    data = requests.post(site, params=post,headers=headers,proxies=proxy,allow_redirects=True)
-    #print(data.text)
-#    data = requests.post(site, params=post, headers=headers, proxies=proxy)
-#    data = urllib.request.urlopen(req)
-#    requests.Request.response.
-#    html = data.read().decode(encoding='cp1251')
+    data= req.post(site,params=post,allow_redirects=True)
     try:
         home = re.search(r'''(?<=parent.onLoginDone\(\'/)\w+''', data.text).group() #BLOOD FOR THE REGEX GOOOOD!11
     except AttributeError:
         print('VkAuth() Error: Authentication failed')
         return None      
-    cookie =data.cookies['remixsid']
-#    post = urllib.parse.urlencode({'s':''})
-#    post = post.encode(encoding='utf_8')
-    params = collections.namedtuple('params', ['cookie', 'home'])
-    return params(cookie, home)
+    cookies =data.cookies
+    req=requests.session(headers=headers,cookies=cookies,proxies=proxy)
+    return 0
 
 def group_search(keywords, cookie):
     '''
@@ -72,20 +58,9 @@ def group_search(keywords, cookie):
     s = ''
     for word in keywords:
         s += word + ' '
-    print(s)
-    headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
-                           'Host' : 'vk.com',
-                           'Referer' : 'http://vk.com/groups',
-                           'Connection' : 'close',
-                           'Cookie' : 'remixchk=5;' + 'remixsid='+params.cookie+';',
-                           'Pragma' : 'no-cache',
-                           'Cache-Control' : 'no-cache'
-                          }
-    
     site = 'http://vk.com/al_groups.php'#поиск группы 
     post = {'act':'server_search', 'al':'1', 'q':s}#волшебный пост
-#    req = urllib.request.Request(site, post, headers)
-    data = requests.post(site,post,headers=headers,proxies=proxy)  
+    data = req.post(site,post)  
     html = parser.unescape(data.text)
     html_pre = html.strip().splitlines()
     groups = []
@@ -102,7 +77,6 @@ def group_search(keywords, cookie):
         elif nstr == 1:
             nstr = 2
         elif nstr == 2:
-            print()
             groups.append(group_stat(temp1, temp2, re.search(r'\d+', line).group()))
             nstr = 0
     return groups
@@ -111,86 +85,36 @@ def group_search(keywords, cookie):
 def VkUpload(file, params):
     '''грузилка изображений, например
     '''
-    headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
-                       'Host' : 'm.vk.com',
-                       'Referer' : 'http://vk.com/',
-                       'Connection' : 'close',
-                       'Cookie' : 'remixchk=5;' + 'remixsid='+ params.cookie+';',
-                       'Pragma' : 'no-cache',
-                       'Cache-Control' : 'no-cache',
-                       'Content-type':'multipart/form-data',
-                       'Content-length':'58388',
-                      }
-    #post = urllib.parse.urlencode({'act':'server_search', 'al':'1', 'q':s})#волшебный пост
+    from html.parser import HTMLParser
+    parser = HTMLParser()
     site = 'http://m.vk.com/album11888818_161787398'
     post = {'s':'','act':'add','from':'select'}
-#    req = urllib.request.Request(site, post, headers)
-    headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
-                       'Host' : 'm.vk.com',
-                       'Referer' : 'http://vk.com/',
-                       'Connection' : 'close',
-                       'Cookie' : 'remixchk=5;' + 'remixsid='+ params.cookie+';',
-                       'Pragma' : 'no-cache',
-                       'Cache-Control' : 'no-cache'}
-    data = requests.post(site,post,headers=headers,proxies=proxy,allow_redirects=True)  
-#    requests.Request.response/
+    data = req.post(site,post,allow_redirects=True)  
     html = data.text
-#    print(html)
     site = re.search(r'''(?<=<form action=")[^"]+''', html).group() #наш урл для загрузки фотачекк, мяффф
-    print(site)
-    print(params.home.lstrip('id'))
-#    site = 'http://vk.com/al_wall.php'
-    headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
-                       'Host' : 'cs315523.vk.com',
-                       'Referer' : 'http://m.vk.com/album11888818_161787398?act=add',
-                       'Connection' : 'close',
-                       'Cookie' : 'remixchk=5;' + 'remixsid='+ params.cookie+';',
-                       'Pragma' : 'no-cache',
-                       'Cache-Control' : 'no-cache'}
-    out={'file1': open(file,'rb'),'file2':StringIO(''),'file3': StringIO('')}
-#    post = post.encode(encoding='utf_8')
-    data = requests.post(site, files=out,headers=headers,proxies=proxy,allow_redirects=True)
-    print(data.text)
-    print(data.status_code)
-
-
-
+    out={'file3': StringIO(''),'file2':StringIO(''),'file1': open(file,'rb')}
+    data=req.post(site,files=out,allow_redirects=True)
+    resp=re.findall(r'''(?<=<a class="al_photo" href=")[^"]+''', data.text)
+    return resp
 
 
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
-#proxy = None
-#if proxy is not None: 
-#    proxy_handler = urllib.request.ProxyHandler(proxy)
-#    opener = urllib.request.build_opener(proxy_handler)
-#    urllib.request.install_opener(opener)
+proxy = None
+headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.666; Hail Satan!; rv:1.9.0.1337) Gecko/2009073022 Firefox/3.0.13 (.NET CLR 3.5.30729)',
+                       'Pragma' : 'no-cache',
+                       'Cache-Control' : 'no-cache',
+                      }
+req=requests.session(headers=headers,proxies=proxy)
+
 login = ('', '')
 params = VkAuth(*login)
-print(params)
 file = './1.jpg'
-#VkUpload(file,coo)
-
-#
-##===================
-#headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
-#                       'Host' : 'vkontakte.ru',
-#                       'Referer' : 'http://vk.com/groups',
-#                       'Connection' : 'close',
-#                       'Cookie' : 'remixchk=5;' + coo,
-#                       'Pragma' : 'no-cache',
-#                       'Cache-Control' : 'no-cache'
-#                      }
-##========================
-#site = 'http://vk.com/feed'
-#post = urllib.parse.urlencode({'s':''})
-#post = post.encode(encoding='utf_8')
-#req = urllib.request.Request(site, post, headers)
-#data = urllib.request.urlopen(req)
-#html = data.read().decode('cp1251')
 
 
 
 
 
 found = group_search(['самые', 'котятки', 'милые'], params)    
-#print(found)
-VkUpload(file, params)
+print(found)
+found=VkUpload(file, params)
+print(found)
