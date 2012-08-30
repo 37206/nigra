@@ -3,6 +3,7 @@ import re
 import sqlite3
 import collections
 import requests
+from _pyio import StringIO
 con = sqlite3.connect('1.db')
 c = con.cursor()
 # Create table
@@ -29,7 +30,7 @@ def VkAuth(login=None, password=None):
     class BaseAuthException(Exception): pass
     class LoginIsNone(BaseAuthException): pass
     class PasswordIsNone(BaseAuthException): pass
-    site = 'https://login.vk.com?act=login'
+    site = 'http://login.vk.com'#https!=squid
     try:
         for name in ('password', 'login'):
             exec("if {0} is None:\n\traise {1}IsNone()".format(name, name.capitalize()))
@@ -46,6 +47,7 @@ def VkAuth(login=None, password=None):
                       }
     #rewrite
     data = requests.post(site, params=post,headers=headers,proxies=proxy,allow_redirects=True)
+    #print(data.text)
 #    data = requests.post(site, params=post, headers=headers, proxies=proxy)
 #    data = urllib.request.urlopen(req)
 #    requests.Request.response.
@@ -55,7 +57,6 @@ def VkAuth(login=None, password=None):
     except AttributeError:
         print('VkAuth() Error: Authentication failed')
         return None      
-    print(data.cookies)  
     cookie =data.cookies['remixsid']
 #    post = urllib.parse.urlencode({'s':''})
 #    post = post.encode(encoding='utf_8')
@@ -111,41 +112,53 @@ def VkUpload(file, params):
     '''грузилка изображений, например
     '''
     headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
-                       'Host' : 'vk.com',
+                       'Host' : 'm.vk.com',
                        'Referer' : 'http://vk.com/',
                        'Connection' : 'close',
-                       'Cookie' : 'remixchk=5;' + params.cookie,
+                       'Cookie' : 'remixchk=5;' + 'remixsid='+ params.cookie+';',
                        'Pragma' : 'no-cache',
-                       'Cache-Control' : 'no-cache'
+                       'Cache-Control' : 'no-cache',
+                       'Content-type':'multipart/form-data',
+                       'Content-length':'58388',
                       }
     #post = urllib.parse.urlencode({'act':'server_search', 'al':'1', 'q':s})#волшебный пост
-    site = 'http://m.vk.com/album11888818_161787398?act=add&from=select'
-#    post = urllib.parse.urlencode({'s':''}).encode(encoding='utf_8')
+    site = 'http://m.vk.com/album11888818_161787398'
+    post = {'s':'','act':'add','from':'select'}
 #    req = urllib.request.Request(site, post, headers)
-#    data = urllib.request.urlopen(req)  
-    html = data.read().decode('cp1251')
-    site = re.search(r'''(?<=<form action=")[^"]+''', html).group() #наш урл для загрузки фотачекк, мяффф
-    print(params.home.lstrip('id'))
-    site = 'http://vk.com/al_wall.php'
-    post = urllib.parse.urlencode({'act': 'post',
-      'type': 'photos_upload',
-      'to_id': params.home.strip('id'),
-      'attach1_type': 'photos_list',
-      'attach1': open(file, 'rb'),
-      'hash': hash})
-    post = post.encode(encoding='utf_8')
-    req = urllib.request.Request(site, post, headers)
-    data = urllib.request.urlopen(req)  
-    html = data.read().decode('cp1251')
+    headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
+                       'Host' : 'm.vk.com',
+                       'Referer' : 'http://vk.com/',
+                       'Connection' : 'close',
+                       'Cookie' : 'remixchk=5;' + 'remixsid='+ params.cookie+';',
+                       'Pragma' : 'no-cache',
+                       'Cache-Control' : 'no-cache'}
+    data = requests.post(site,post,headers=headers,proxies=proxy,allow_redirects=True)  
+#    requests.Request.response/
+    html = data.text
 #    print(html)
-
+    site = re.search(r'''(?<=<form action=")[^"]+''', html).group() #наш урл для загрузки фотачекк, мяффф
+    print(site)
+    print(params.home.lstrip('id'))
+#    site = 'http://vk.com/al_wall.php'
+    headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.0.13) Gecko/2009073022 Firefox/3.0.13',
+                       'Host' : 'cs315523.vk.com',
+                       'Referer' : 'http://m.vk.com/album11888818_161787398?act=add',
+                       'Connection' : 'close',
+                       'Cookie' : 'remixchk=5;' + 'remixsid='+ params.cookie+';',
+                       'Pragma' : 'no-cache',
+                       'Cache-Control' : 'no-cache'}
+    out={'file1': open(file,'rb'),'file2':StringIO(''),'file3': StringIO('')}
+#    post = post.encode(encoding='utf_8')
+    data = requests.post(site, files=out,headers=headers,proxies=proxy,allow_redirects=True)
+    print(data.text)
+    print(data.status_code)
 
 
 
 
 
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
-proxy = None
+#proxy = None
 #if proxy is not None: 
 #    proxy_handler = urllib.request.ProxyHandler(proxy)
 #    opener = urllib.request.build_opener(proxy_handler)
@@ -179,5 +192,5 @@ file = './1.jpg'
 
 
 found = group_search(['самые', 'котятки', 'милые'], params)    
-print(found)
-#VkUpload(file, params)
+#print(found)
+VkUpload(file, params)
