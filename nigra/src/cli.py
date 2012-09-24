@@ -58,10 +58,14 @@ def group_search(keywords, cookie):
     s = ''
     for word in keywords:
         s += word + ' '
-    site = 'http://vk.com/al_groups.php'#поиск группы 
-    post = {'act':'server_search', 'al':'1', 'q':s}#волшебный пост
+    #site = 'http://vk.com/al_groups.php'#поиск группы 
+    site='http://vk.com/al_video.php'# а вот там лежит хэш для видосов
+#    post = {'act':'server_search', 'al':'1', 'q':s}#волшебный пост
+    post={'act':'show','al':'1','module':'vieo','video':'100457938_162516488'}
     data = req.post(site,post)  
     html = parser.unescape(data.text)
+    print(html)
+    sys.exit
     html_pre = html.strip().splitlines()
     groups = []
     line = 'd'
@@ -93,6 +97,7 @@ def VkUpload(files, type):
         out=dict(('file'+str(i+1),open(file,'rb') if file is not None  else StringIO('')) for i,file in enumerate(files))
         data=req.post(site,files=out,allow_redirects=True)
         resp=re.findall(r'''(?<=<a class="al_photo" href=")[^"]+''', data.text)
+
     return resp
 
 
@@ -112,7 +117,7 @@ req=requests.session(headers=headers,proxies=proxy)
 
 login = ('', '')
 params = VkAuth(*login)
-file = './1.jpg'
+file = ['./1.jpg',None,None]
 
 
 
@@ -120,5 +125,7 @@ file = './1.jpg'
 
 found = group_search(['самые', 'котятки', 'милые'], params)    
 print(found)
-#found=VkUpload(file, params)
-#print(found)
+type='photo'
+found=VkUpload(file, type)
+print(found)
+
