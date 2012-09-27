@@ -59,9 +59,13 @@ def group_search(keywords, cookie):
     for word in keywords:
         s += word + ' '
     site = 'http://vk.com/al_groups.php'#поиск группы 
+#    site='http://vk.com/al_video.php'# а вот там лежит хэш для видосов
     post = {'act':'server_search', 'al':'1', 'q':s}#волшебный пост
+#    post={'act':'show','al':'1','module':'vieo','video':'100457938_162516488'}
     data = req.post(site,post)  
     html = parser.unescape(data.text)
+#    print(html)
+#    sys.exit
     html_pre = html.strip().splitlines()
     groups = []
     line = 'd'
@@ -82,19 +86,21 @@ def group_search(keywords, cookie):
     return groups
 
 
-def VkUpload(file, params):
+def VkUpload(files, type):
     '''грузилка изображений, например
     '''
-    from html.parser import HTMLParser
-    parser = HTMLParser()
-    site = 'http://m.vk.com/album11888818_161787398'
-    post = {'s':'','act':'add','from':'select'}
-    data = req.post(site,post,allow_redirects=True)  
-    html = data.text
-    site = re.search(r'''(?<=<form action=")[^"]+''', html).group() #наш урл для загрузки фотачекк, мяффф
-    out={'file3': StringIO(''),'file2':StringIO(''),'file1': open(file,'rb')}
-    data=req.post(site,files=out,allow_redirects=True)
-    resp=re.findall(r'''(?<=<a class="al_photo" href=")[^"]+''', data.text)
+    if type is 'photo':
+        site = 'http://m.vk.com/album11888818_161787398'#поправить на что-то вменяемое
+        post = {'s':'','act':'add','from':'select'}
+        data = req.post(site,post,allow_redirects=True)  
+        html = data.text
+        site = re.search(r'''(?<=<form action=")[^"]+''', html).group() #наш урл для загрузки фотачекк, мяффф
+        out=dict(('file'+str(i+1),open(file,'rb') if file is not None  else StringIO('')) for i,file in enumerate(files))
+        data=req.post(site,files=out,allow_redirects=True)
+        resp=re.findall(r'''(?<=<a class="al_photo" href=")[^"]+''', data.text)
+        
+        
+    
     return resp
 
 
@@ -106,15 +112,13 @@ headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.666; Hail Satan
                       }
 req=requests.session(headers=headers,proxies=proxy)
 
-login = ('', '')
+login = ('a37206@gmail.com', 'upyachka')
 params = VkAuth(*login)
-file = './1.jpg'
-
-
-
+file = ['./1.jpg',None,None]
 
 
 found = group_search(['самые', 'котятки', 'милые'], params)    
 print(found)
-found=VkUpload(file, params)
-print(found)
+type='photo'
+found=VkUpload(file, type)
+#print(found)
