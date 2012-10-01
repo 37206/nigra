@@ -4,9 +4,8 @@ import sqlite3
 import collections
 import requests
 from _pyio import StringIO
-con = sqlite3.connect('1.db')
-c = con.cursor()
 
+import os,time,datetime#Alena
 
 
 def VkAuth(login=None, password=None):
@@ -97,7 +96,68 @@ def parse_news(groups=None):
     for group in groups:
         print('void')
 
+def sqlInit(mydb_path,listOfGroup):
+    ''' Запись групп в БД'''
+        
+    try:
+        if not os.path.exists(mydb_path):
+            #create new DB, create table stocks
+            con = sqlite3.connect(mydb_path)
+            con.execute('''create table TGroups
+              (dateTime real, groupID text, groupName text, likeNum real)''')
+            con.execute('''create table TNews
+              (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob)''')
+            con.execute('''create table TKeyWarlds
+              (keyWardID integer, warws text)''')
+        else:
+            #use existing DB
+            con = sqlite3.connect(mydb_path)
 
+        cur= con.cursor()
+        t=datetime.datetime.now()
+        mktime=str(time.mktime(t.timetuple()))
+        #заполняем БД
+        if len(listOfGroup)!=0:
+            for groupID,groupName,likeNum in listOfGroup:
+                #print(groupID,groupName,likeNum)
+                strr=str("INSERT INTO TGroups VALUES("+mktime+",'"+groupID+"','"+groupName+"',"+likeNum+")")
+                print(strr)
+                cur.execute(strr)
+        else:
+            pass
+            
+        
+        con.commit()    
+
+    except sqlite3.Error as e:
+        print ("Error %s:" % e.args[0])
+#    sys.exit(1)
+    finally:
+        if con:
+            # We can also close the connection if we are done with it.
+            # Just be sure any changes have been committed or they will be lost.
+            con.close()
+
+def sqlOut(mydb_path,tableName):
+    print('sqlOut')
+    
+    try:
+        con = sqlite3.connect(mydb_path)
+        cur= con.cursor()
+        #print for example
+        for row in cur.execute('SELECT * FROM TGroups ORDER BY dateTime'):
+            print (row)
+            
+    except sqlite3.Error as e:
+        print ("Error %s:" % e.args[0])
+
+    finally:
+        if con:
+            # We can also close the connection if we are done with it.
+            # Just be sure any changes have been committed or they will be lost.
+            con.close()
+
+#вызов функций
 
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
 proxy = None
@@ -114,6 +174,14 @@ file = ['./1.jpg',None,None]
 
 found = group_search(['сага', 'сумерки', 'затмение'], params)    
 print(found)
-type='photo'
-found=VkUpload(file, type)
+#type='photo'
+#found=VkUpload(file, type)
 #print(found)
+#---------
+mydb_path='1.db'# BD name
+listOfGroup=found#list of found groups        
+#sqlInit(mydb_path,listOfGroup)
+sqlOut(mydb_path,'TGroups')
+
+
+
