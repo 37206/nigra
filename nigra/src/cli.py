@@ -58,14 +58,14 @@ def group_search(keywords, cookie):
     s = ''
     for word in keywords:
         s += word + ' '
-    #site = 'http://vk.com/al_groups.php'#поиск группы 
-    site='http://vk.com/al_video.php'# а вот там лежит хэш для видосов
-#    post = {'act':'server_search', 'al':'1', 'q':s}#волшебный пост
-    post={'act':'show','al':'1','module':'vieo','video':'100457938_162516488'}
+    site = 'http://vk.com/al_groups.php'#поиск группы 
+#    site='http://vk.com/al_video.php'# а вот там лежит хэш для видосов
+    post = {'act':'server_search', 'al':'1', 'q':s}#волшебный пост
+#    post={'act':'show','al':'1','module':'vieo','video':'100457938_162516488'}
     data = req.post(site,post)  
     html = parser.unescape(data.text)
-    print(html)
-    sys.exit
+#    print(html)
+#    sys.exit
     html_pre = html.strip().splitlines()
     groups = []
     line = 'd'
@@ -85,6 +85,7 @@ def group_search(keywords, cookie):
             nstr = 0
     return groups
 
+
 def VkUpload(files, type):
     '''грузилка изображений, например
     '''
@@ -97,14 +98,10 @@ def VkUpload(files, type):
         out=dict(('file'+str(i+1),open(file,'rb') if file is not None  else StringIO('')) for i,file in enumerate(files))
         data=req.post(site,files=out,allow_redirects=True)
         resp=re.findall(r'''(?<=<a class="al_photo" href=")[^"]+''', data.text)
-
+        
+        
+    
     return resp
-
-
-def parse_news(groups=None):
-    for group in groups:
-        print('void')
-
 
 
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
@@ -115,17 +112,13 @@ headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.666; Hail Satan
                       }
 req=requests.session(headers=headers,proxies=proxy)
 
-login = ('', '')
+login = ('a37206@gmail.com', 'upyachka')
 params = VkAuth(*login)
 file = ['./1.jpg',None,None]
-
-
-
 
 
 found = group_search(['самые', 'котятки', 'милые'], params)    
 print(found)
 type='photo'
 found=VkUpload(file, type)
-print(found)
-
+#print(found)
