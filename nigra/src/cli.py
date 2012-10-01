@@ -104,6 +104,12 @@ def VkUpload(files, type):
     return resp
 
 
+def parse_news(groups=None):
+    for group in groups:
+        print('void')
+
+
+
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
 proxy = None
 headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.666; Hail Satan!; rv:1.9.0.1337) Gecko/2009073022 Firefox/3.0.13 (.NET CLR 3.5.30729)',
