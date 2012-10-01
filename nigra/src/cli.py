@@ -6,18 +6,7 @@ import requests
 from _pyio import StringIO
 con = sqlite3.connect('1.db')
 c = con.cursor()
-# Create table
-#c.execute('''create table stocks
-#(date text, trans text, symbol text,
-# qty real, price real)''')
 
-# Insert a row of data
-#c.execute("""drop table stocks""")
-# Save (commit) the changes
-con.commit()
-
-# We can also close the cursor if we are done with it
-c.close()
 
 
 def VkAuth(login=None, password=None):
@@ -123,7 +112,7 @@ params = VkAuth(*login)
 file = ['./1.jpg',None,None]
 
 
-found = group_search(['самые', 'котятки', 'милые'], params)    
+found = group_search(['сага', 'сумерки', 'затмение'], params)    
 print(found)
 type='photo'
 found=VkUpload(file, type)
