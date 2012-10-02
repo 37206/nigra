@@ -4,7 +4,6 @@ import sqlite3
 import collections
 import requests
 from _pyio import StringIO
-
 import os,time,datetime#Alena
 
 
@@ -92,9 +91,17 @@ def VkUpload(files, type):
     return resp
 
 
-def parse_news(groups=None):
-    for group in groups:
-        print('void')
+proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
+proxy = None
+headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.666; Hail Satan!; rv:1.9.0.1337) Gecko/2009073022 Firefox/3.0.13 (.NET CLR 3.5.30729)',
+                       'Pragma' : 'no-cache',
+                       'Cache-Control' : 'no-cache',
+                      }
+req=requests.session(headers=headers,proxies=proxy)
+
+login = ('a37206@gmail.com', 'upyachka')
+params = VkAuth(*login)
+file = ['./1.jpg',None,None]
 
 def sqlInit(mydb_path,listOfGroup):
     ''' Запись групп в БД'''
@@ -111,7 +118,7 @@ def sqlInit(mydb_path,listOfGroup):
               (keyWardID integer, warws text)''')
         else:
             #use existing DB
-            con = sqlite3.connect(mydb_path)
+                con = sqlite3.connect(mydb_path)
 
         cur= con.cursor()
         t=datetime.datetime.now()
@@ -140,48 +147,20 @@ def sqlInit(mydb_path,listOfGroup):
 
 def sqlOut(mydb_path,tableName):
     print('sqlOut')
-    
-    try:
-        con = sqlite3.connect(mydb_path)
-        cur= con.cursor()
-        #print for example
-        for row in cur.execute('SELECT * FROM TGroups ORDER BY dateTime'):
-            print (row)
-            
-    except sqlite3.Error as e:
-        print ("Error %s:" % e.args[0])
-
-    finally:
-        if con:
-            # We can also close the connection if we are done with it.
-            # Just be sure any changes have been committed or they will be lost.
-            con.close()
-
-#вызов функций
-
-proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
-proxy = None
-headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.666; Hail Satan!; rv:1.9.0.1337) Gecko/2009073022 Firefox/3.0.13 (.NET CLR 3.5.30729)',
-                       'Pragma' : 'no-cache',
-                       'Cache-Control' : 'no-cache',
-                      }
-req=requests.session(headers=headers,proxies=proxy)
-
-login = ('a37206@gmail.com', 'upyachka')
-params = VkAuth(*login)
-file = ['./1.jpg',None,None]
 
 
-found = group_search(['сага', 'сумерки', 'затмение'], params)    
-print(found)
-#type='photo'
-#found=VkUpload(file, type)
-#print(found)
-#---------
+found = group_search(['кошки', 'милые', 'котятки'], params)    
+#for l in found:
+#    print(l[0],l[1] ,'\n')
 mydb_path='1.db'# BD name
 listOfGroup=found#list of found groups        
-#sqlInit(mydb_path,listOfGroup)
-sqlOut(mydb_path,'TGroups')
+sqlInit(mydb_path,listOfGroup)
+sqlOut(mydb_path,TGroups)
+
+type='photo'
+#found=VkUpload(file, type)
+#print(found)
+
 
 
 
