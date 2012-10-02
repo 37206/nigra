@@ -91,17 +91,6 @@ def VkUpload(files, type):
     return resp
 
 
-proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
-proxy = None
-headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.666; Hail Satan!; rv:1.9.0.1337) Gecko/2009073022 Firefox/3.0.13 (.NET CLR 3.5.30729)',
-                       'Pragma' : 'no-cache',
-                       'Cache-Control' : 'no-cache',
-                      }
-req=requests.session(headers=headers,proxies=proxy)
-
-login = ('a37206@gmail.com', 'upyachka')
-params = VkAuth(*login)
-file = ['./1.jpg',None,None]
 
 def sqlInit(mydb_path,listOfGroup):
     ''' Запись групп в БД'''
@@ -115,12 +104,29 @@ def sqlInit(mydb_path,listOfGroup):
             con.execute('''create table TNews
               (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob)''')
             con.execute('''create table TKeyWarlds
-              (keyWardID integer, warws text)''')
+              (keyWardID integer primary key, warws text)''')
         else:
             #use existing DB
                 con = sqlite3.connect(mydb_path)
 
+
         cur= con.cursor()
+        
+        yy="SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
+        tabl=cur.execute(yy)
+        for i in tabl:
+            print(i)
+        print('t1')    
+            
+        
+        temp='PRAGMA table_info("TGroups")' 
+        t2=cur.execute(temp)
+        
+        for i in t2:
+            print(i)
+        
+        
+        
         t=datetime.datetime.now()
         mktime=str(time.mktime(t.timetuple()))
         #заполняем БД
@@ -132,10 +138,10 @@ def sqlInit(mydb_path,listOfGroup):
                 cur.execute(strr)
         else:
             pass
-            
         
         con.commit()    
-
+        print('!exelent')
+    
     except sqlite3.Error as e:
         print ("Error %s:" % e.args[0])
 #    sys.exit(1)
@@ -145,20 +151,53 @@ def sqlInit(mydb_path,listOfGroup):
             # Just be sure any changes have been committed or they will be lost.
             con.close()
 
+
 def sqlOut(mydb_path,tableName):
+    ''' Запросы sql '''
+    
     print('sqlOut')
+    
+    try:
+        con = sqlite3.connect(mydb_path)
+        cur= con.cursor()
+        #print for example
+        for row in cur.execute('SELECT * FROM TGroups ORDER BY dateTime'):
+            print (row)
+            
+    except sqlite3.Error as e:
+        print ("Error %s:" % e.args[0])
 
+    finally:
+        if con:
+            # We can also close the connection if we are done with it.
+            # Just be sure any changes have been committed or they will be lost.
+            con.close()
 
-found = group_search(['кошки', 'милые', 'котятки'], params)    
+#----------------------------------------------------------------------------------------
+proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
+proxy = None
+headers = {'User-Agent' : 'Mozilla/5.0 (Windows; U; Windows NT 5.666; Hail Satan!; rv:1.9.0.1337) Gecko/2009073022 Firefox/3.0.13 (.NET CLR 3.5.30729)',
+                       'Pragma' : 'no-cache',
+                       'Cache-Control' : 'no-cache',
+                      }
+req=requests.session(headers=headers,proxies=proxy)
+
+login = ('a37206@gmail.com', 'upyachka')
+params = VkAuth(*login)
+file = ['./1.jpg',None,None]
+
+#found = group_search(['кошки', 'милые', 'котятки'], params) #поиск групп   
 #for l in found:
 #    print(l[0],l[1] ,'\n')
 mydb_path='1.db'# BD name
-listOfGroup=found#list of found groups        
+#listOfGroup=found#list of found groups        
+listOfGroup=[]
 sqlInit(mydb_path,listOfGroup)
-sqlOut(mydb_path,TGroups)
+
+#sqlOut(mydb_path,'TGroups')
 
 type='photo'
-#found=VkUpload(file, type)
+#found=VkUpload(file, type)№загрузка фото
 #print(found)
 
 
