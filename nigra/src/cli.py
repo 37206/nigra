@@ -94,36 +94,56 @@ def VkUpload(files, type):
 
 def sqlInit(mydb_path,listOfGroup):
     ''' Запись групп в БД'''
-        
+    print('sqlInit')   
     try:
         if not os.path.exists(mydb_path):
             #create new DB, create table stocks
             con = sqlite3.connect(mydb_path)
-            con.execute('''create table TGroups
-              (dateTime real, groupID text, groupName text, likeNum real)''')
-            con.execute('''create table TNews
-              (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob)''')
-            con.execute('''create table TKeyWarlds
-              (keyWardID integer primary key, warws text)''')
+            con.executescript('''create table TGroups
+              (dateTime real, groupID text, groupName text, likeNum real);
+            create table TNews
+             (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob);
+            create table TKeyWarlds
+              (keyWardID integer primary key, warws text);''')
         else:
             #use existing DB
-                con = sqlite3.connect(mydb_path)
-
-
-        cur= con.cursor()
+            con = sqlite3.connect(mydb_path)
         
-        yy="SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
-        tabl=cur.execute(yy)
-        for i in tabl:
-            print(i)
-        print('t1')    
+ 
+        cur= con.cursor() 
+        #con.executescript('''drop table * ''') 
+        
+        #delete table
+        con.executescript('''DROP TABLE IF EXISTS TGroups ; 
+                              drop table  IF EXISTS TNews;
+                              drop table  IF EXISTS TKeyWarlds;  ''')# delete tables 
+  
+        con.executescript('''create table TGroups
+              (dateTime real, groupID text, groupName text, likeNum real);
+            create table TNews
+             (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob);
+            create table TKeyWarlds
+             (keyWardID integer primary key, warws text);''')
             
         
+        #запрос на имена таблиц БД    
+        ss="SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
+        tabl=cur.execute(ss)#возвращает список кортежей
+        #tablName1,tablName2,tablName3=tabl
+        #print('tablName1,tablName2,tablName3',tablName1,tablName2,tablName3)
+              
+        #cur.execute(yy) #print (cur.fetchone(),'!!')#возвращает имя таблицы используемой
+   
+        print(tabl)
+        for i in tabl:
+            print(i,type(i),i[0])
+        print('t1')    
+            
+        запрос на ин-фу в таблице      
         temp='PRAGMA table_info("TGroups")' 
         t2=cur.execute(temp)
-        
         for i in t2:
-            print(i)
+            print(i,type(i))
         
         
         
