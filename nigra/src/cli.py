@@ -139,7 +139,7 @@ def sqlInit(mydb_path,listOfGroup):
             print(i,type(i),i[0])
         print('t1')    
             
-        запрос на ин-фу в таблице      
+        #запрос на ин-фу в таблице      
         temp='PRAGMA table_info("TGroups")' 
         t2=cur.execute(temp)
         for i in t2:
