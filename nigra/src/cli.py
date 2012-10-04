@@ -123,28 +123,66 @@ def sqlInit(mydb_path,listOfGroup):
             create table TNews
              (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob);
             create table TKeyWarlds
-             (keyWardID integer primary key, warws text);''')
+             (keyWardID integer primary key, wards text);''')
             
         
         #запрос на имена таблиц БД    
         ss="SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
-        tabl=cur.execute(ss)#возвращает список кортежей
-        #tablName1,tablName2,tablName3=tabl
-        #print('tablName1,tablName2,tablName3',tablName1,tablName2,tablName3)
-              
-        #cur.execute(yy) #print (cur.fetchone(),'!!')#возвращает имя таблицы используемой
-   
-        print(tabl)
-        for i in tabl:
-            print(i,type(i),i[0])
-        print('t1')    
-            
-        #запрос на ин-фу в таблице      
-        temp='PRAGMA table_info("TGroups")' 
-        t2=cur.execute(temp)
-        for i in t2:
-            print(i,type(i))
+        tablNames=cur.execute(ss)#возвращает список кортежей
         
+        #список МОИХ таблиц БД
+        dictMyTables={'TGroups':['dateTime', 'groupID', 'groupName', 'likeNum'],
+                    'TNews':['nowTime', 'vkPublTime', 'newsID', 'indexPopul', 'newsText'],
+                    'TKeyWarlds':['keyWardID', 'wards']}
+        
+        #print(dictTables)
+        
+        #listOfTables=['TGroups','TKeyWarlds','TNews']#известно заранее
+        
+        
+        dictTableInfo={}
+        for tableName in tablNames:
+            if tableName[0] in dictMyTables:
+                #print(tableName[0])
+                dictTableInfo[tableName[0]]=[]
+                        
+        print(dictTableInfo)
+        for i in dictTableInfo.keys():
+            print(i)
+            t2=cur.execute("PRAGMA table_info('"+i+"')")
+            for j in t2:
+                dictTableInfo[i].append(j[1])
+        
+        print(dictTableInfo)
+        print(dictMyTables)
+        
+        count=0
+        countCont=0
+        for i in dictMyTables.keys():
+            for j in dictMyTables[i]:
+                count=count+1
+        print('count',count)
+            
+        for tabInfKey in  dictTableInfo.keys():
+            if tabInfKey in dictMyTables.keys():
+                for tabInf in dictTableInfo[tabInfKey ]:
+                    if tabInf in dictMyTables[tabInfKey]:
+                        print(tabInfKey,tabInf)
+                        countCont=countCont+1
+        print('countCont',countCont)
+        
+        #проверка на существование и правильность таблицы
+        if countCont==count:
+            pass
+        else:
+             con.executescript('''create table TGroups
+              (dateTime real, groupID text, groupName text, likeNum real);
+            create table TNews
+             (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob);
+            create table TKeyWarlds
+             (keyWardID integer primary key, wards text);''')
+              
+          
         
         
         t=datetime.datetime.now()
