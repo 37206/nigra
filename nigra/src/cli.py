@@ -94,13 +94,17 @@ def VkUpload(files, type):
 
 def sqlInit(mydb_path,listOfGroup):
     ''' Запись групп в БД'''
-    print('sqlInit')   
-    try:
+    print('sqlInit', len(listOfGroup))   
+    
+    if len(listOfGroup)==0:
+        print('Ничего не найдено')
+    else:
+        try:
         if not os.path.exists(mydb_path):
             #create new DB, create table stocks
             con = sqlite3.connect(mydb_path)
             con.executescript('''create table TGroups
-              (dateTime real, groupID text, groupName text, likeNum real);
+              (groupID text, groupName text, likeNum real);
             create table TNews
              (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob);
             create table TKeyWarlds
@@ -111,79 +115,59 @@ def sqlInit(mydb_path,listOfGroup):
         
  
         cur= con.cursor() 
-        #con.executescript('''drop table * ''') 
         
-        #delete table
-        con.executescript('''DROP TABLE IF EXISTS TGroups ; 
-                              drop table  IF EXISTS TNews;
-                              drop table  IF EXISTS TKeyWarlds;  ''')# delete tables 
+        #список МОИХ таблиц БД
+        dictMyTables={'TGroups':['groupID', 'groupName', 'likeNum'],
+                    'TNews':['nowTime', 'vkPublTime', 'newsID', 'indexPopul', 'newsText'],
+                    'TKeyWarlds':['keyWardID', 'wards']}
   
-        con.executescript('''create table TGroups
-              (dateTime real, groupID text, groupName text, likeNum real);
-            create table TNews
-             (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob);
-            create table TKeyWarlds
-             (keyWardID integer primary key, wards text);''')
-            
         
         #запрос на имена таблиц БД    
         ss="SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
         tablNames=cur.execute(ss)#возвращает список кортежей
+           
+        dictTableInfo={}#словарь существ таблиц со столбцами
         
-        #список МОИХ таблиц БД
-        dictMyTables={'TGroups':['dateTime', 'groupID', 'groupName', 'likeNum'],
-                    'TNews':['nowTime', 'vkPublTime', 'newsID', 'indexPopul', 'newsText'],
-                    'TKeyWarlds':['keyWardID', 'wards']}
-        
-        #print(dictTables)
-        
-        #listOfTables=['TGroups','TKeyWarlds','TNews']#известно заранее
-        
-        
-        dictTableInfo={}
         for tableName in tablNames:
             if tableName[0] in dictMyTables:
-                #print(tableName[0])
-                dictTableInfo[tableName[0]]=[]
-                        
-        print(dictTableInfo)
+                dictTableInfo[tableName[0]]=[]#добавили имена таблиц
+
         for i in dictTableInfo.keys():
-            print(i)
             t2=cur.execute("PRAGMA table_info('"+i+"')")
             for j in t2:
                 dictTableInfo[i].append(j[1])
-        
-        print(dictTableInfo)
-        print(dictMyTables)
+        #print(dictTableInfo)
         
         count=0
-        countCont=0
+        countControl=0
+        
         for i in dictMyTables.keys():
             for j in dictMyTables[i]:
-                count=count+1
-        print('count',count)
-            
-        for tabInfKey in  dictTableInfo.keys():
-            if tabInfKey in dictMyTables.keys():
-                for tabInf in dictTableInfo[tabInfKey ]:
-                    if tabInf in dictMyTables[tabInfKey]:
-                        print(tabInfKey,tabInf)
-                        countCont=countCont+1
-        print('countCont',countCont)
+                count=count+1#считаем число элементов опорной таблицы 
+         
+        for i in dictTableInfo.keys():
+            for j in dictTableInfo[i]:
+                countControl=countControl+1#считаем число элементов таблицы BD
+
+        print(countControl,count)
         
         #проверка на существование и правильность таблицы
-        if countCont==count:
-            pass
-        else:
-             con.executescript('''create table TGroups
-              (dateTime real, groupID text, groupName text, likeNum real);
-            create table TNews
-             (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob);
-            create table TKeyWarlds
-             (keyWardID integer primary key, wards text);''')
-              
-          
-        
+        if countControl==count and count!=0 and countControl!=0 :
+            #pass
+            print('1')
+        elif countControl>count or countControl<count or countControl==0 :
+            print('2')
+            #delete tables if they wrong & create news
+            con.executescript('''DROP TABLE IF EXISTS TGroups ; 
+                              drop table  IF EXISTS TNews;
+                              drop table  IF EXISTS TKeyWarlds; ''')
+                             
+            con.executescript(''' create table TGroups
+                              (groupID text, groupName text, likeNum real);
+                              create table TNews
+                              (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob);
+                              create table TKeyWarlds
+                              (keyWardID integer primary key, wards text);  ''')
         
         t=datetime.datetime.now()
         mktime=str(time.mktime(t.timetuple()))
@@ -191,14 +175,16 @@ def sqlInit(mydb_path,listOfGroup):
         if len(listOfGroup)!=0:
             for groupID,groupName,likeNum in listOfGroup:
                 #print(groupID,groupName,likeNum)
-                strr=str("INSERT INTO TGroups VALUES("+mktime+",'"+groupID+"','"+groupName+"',"+likeNum+")")
-                print(strr)
+                strr=str("INSERT INTO TGroups VALUES('"+groupID+"','"+groupName+"',"+likeNum+")")
+                #print(strr)
                 cur.execute(strr)
         else:
             pass
         
         con.commit()    
-        print('!exelent')
+        #print('!exelent')
+ 
+    
     
     except sqlite3.Error as e:
         print ("Error %s:" % e.args[0])
@@ -219,9 +205,11 @@ def sqlOut(mydb_path,tableName):
         con = sqlite3.connect(mydb_path)
         cur= con.cursor()
         #print for example
-        for row in cur.execute('SELECT * FROM TGroups ORDER BY dateTime'):
-            print (row)
-            
+        list=[]
+        for row in cur.execute('SELECT * FROM TGroups ORDER BY groupID'):
+            #print (row)
+            list.append(row)
+        return(list)
     except sqlite3.Error as e:
         print ("Error %s:" % e.args[0])
 
@@ -244,16 +232,19 @@ login = ('a37206@gmail.com', 'upyachka')
 params = VkAuth(*login)
 file = ['./1.jpg',None,None]
 
-#found = group_search(['кошки', 'милые', 'котятки'], params) #поиск групп   
-#for l in found:
-#    print(l[0],l[1] ,'\n')
+found = group_search(['коты', 'котята', 'кошечки'], params) #поиск групп   
+
+for l in found:
+    print(l[0],l[1] ,'\n')
 mydb_path='1.db'# BD name
-#listOfGroup=found#list of found groups        
+listOfGroup=found#list of found groups        
 listOfGroup=[]
 sqlInit(mydb_path,listOfGroup)
 
-#sqlOut(mydb_path,'TGroups')
-
+#lis=sqlOut(mydb_path,'TGroups')
+#for l in lis:
+#    print(l)
+    
 type='photo'
 #found=VkUpload(file, type)№загрузка фото
 #print(found)
