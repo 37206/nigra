@@ -100,100 +100,99 @@ def sqlInit(mydb_path,listOfGroup):
         print('Ничего не найдено')
     else:
         try:
-        if not os.path.exists(mydb_path):
-            #create new DB, create table stocks
-            con = sqlite3.connect(mydb_path)
-            con.executescript('''create table TGroups
-              (groupID text, groupName text, likeNum real);
-            create table TNews
-             (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob);
-            create table TKeyWarlds
-              (keyWardID integer primary key, warws text);''')
-        else:
-            #use existing DB
-            con = sqlite3.connect(mydb_path)
+            if not os.path.exists(mydb_path):
+                #create new DB, create table stocks
+                con = sqlite3.connect(mydb_path)
+                con.executescript('''create table TGroups
+                   (ID integer primary key AUTOINCREMENT,groupID text, groupName text, likeNum real);
+                   create table TNews
+                   (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob);
+                   create table TKeyWarlds
+                   (keyWardID integer primary key AUTOINCREMENT, warws text);''')
+            else:
+                #use existing DB
+                con = sqlite3.connect(mydb_path)
         
  
-        cur= con.cursor() 
+                cur= con.cursor() 
         
-        #список МОИХ таблиц БД
-        dictMyTables={'TGroups':['groupID', 'groupName', 'likeNum'],
+                #список МОИХ таблиц БД
+            dictMyTables={'TGroups':['ID integer primary key AUTOINCREMENT','groupID', 'groupName', 'likeNum'],
                     'TNews':['nowTime', 'vkPublTime', 'newsID', 'indexPopul', 'newsText'],
                     'TKeyWarlds':['keyWardID', 'wards']}
   
         
-        #запрос на имена таблиц БД    
-        ss="SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
-        tablNames=cur.execute(ss)#возвращает список кортежей
-           
-        dictTableInfo={}#словарь существ таблиц со столбцами
+                #запрос на имена таблиц БД    
+            ss="SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
+            tablNames=cur.execute(ss)#возвращает список кортежей
+            dictTableInfo={}#словарь существ таблиц со столбцами
         
-        for tableName in tablNames:
-            if tableName[0] in dictMyTables:
-                dictTableInfo[tableName[0]]=[]#добавили имена таблиц
+            for tableName in tablNames:
+                if tableName[0] in dictMyTables:
+                    dictTableInfo[tableName[0]]=[]#добавили имена таблиц
 
-        for i in dictTableInfo.keys():
-            t2=cur.execute("PRAGMA table_info('"+i+"')")
-            for j in t2:
-                dictTableInfo[i].append(j[1])
-        #print(dictTableInfo)
+            for i in dictTableInfo.keys():
+                t2=cur.execute("PRAGMA table_info('"+i+"')")
+                for j in t2:
+                    dictTableInfo[i].append(j[1])
+            #print(dictTableInfo)
         
-        count=0
-        countControl=0
+            count=0
+            countControl=0
         
-        for i in dictMyTables.keys():
-            for j in dictMyTables[i]:
-                count=count+1#считаем число элементов опорной таблицы 
+            for i in dictMyTables.keys():
+                for j in dictMyTables[i]:
+                    count=count+1#считаем число элементов опорной таблицы 
          
-        for i in dictTableInfo.keys():
-            for j in dictTableInfo[i]:
-                countControl=countControl+1#считаем число элементов таблицы BD
+            for i in dictTableInfo.keys():
+                for j in dictTableInfo[i]:
+                    countControl=countControl+1#считаем число элементов таблицы BD
 
-        print(countControl,count)
+            print(countControl,count)
         
-        #проверка на существование и правильность таблицы
-        if countControl==count and count!=0 and countControl!=0 :
-            #pass
-            print('1')
-        elif countControl>count or countControl<count or countControl==0 :
-            print('2')
-            #delete tables if they wrong & create news
-            con.executescript('''DROP TABLE IF EXISTS TGroups ; 
+            #проверка на существование и правильность таблицы
+            if countControl==count and count!=0 and countControl!=0 :
+                #pass
+                print('1')
+            elif countControl>count or countControl<count or countControl==0 :
+                print('2')
+                #delete tables if they wrong & create news
+                con.executescript('''DROP TABLE IF EXISTS TGroups ; 
                               drop table  IF EXISTS TNews;
                               drop table  IF EXISTS TKeyWarlds; ''')
                              
-            con.executescript(''' create table TGroups
-                              (groupID text, groupName text, likeNum real);
+                con.executescript(''' create table TGroups
+                              (ID integer primary key AUTOINCREMENT, groupID text, groupName text, likeNum real);
                               create table TNews
                               (nowTime real, vkPublTime real, newsID text, indexPopul real, newsText blob);
                               create table TKeyWarlds
-                              (keyWardID integer primary key, wards text);  ''')
+                              (keyWardID integer primary key AUTOINCREMENT, wards text);  ''')
         
-        t=datetime.datetime.now()
-        mktime=str(time.mktime(t.timetuple()))
-        #заполняем БД
-        if len(listOfGroup)!=0:
-            for groupID,groupName,likeNum in listOfGroup:
-                #print(groupID,groupName,likeNum)
-                strr=str("INSERT INTO TGroups VALUES('"+groupID+"','"+groupName+"',"+likeNum+")")
-                #print(strr)
-                cur.execute(strr)
-        else:
-            pass
+            t=datetime.datetime.now()
+            mktime=str(time.mktime(t.timetuple()))
+            #заполняем БД
+            if len(listOfGroup)!=0:
+                for groupID,groupName,likeNum in listOfGroup:
+                    #print(groupID,groupName,likeNum)
+                    strr=str("INSERT INTO TGroups VALUES('"+groupID+"','"+groupName+"',"+likeNum+")")
+                    #print(strr)
+                    cur.execute(strr)
+            else:
+                pass
         
-        con.commit()    
-        #print('!exelent')
+            con.commit()    
+            #print('!exelent')
  
     
     
-    except sqlite3.Error as e:
-        print ("Error %s:" % e.args[0])
-#    sys.exit(1)
-    finally:
-        if con:
-            # We can also close the connection if we are done with it.
-            # Just be sure any changes have been committed or they will be lost.
-            con.close()
+        except sqlite3.Error as e:
+            print ("Error %s:" % e.args[0])
+            #sys.exit(1)
+        finally:
+            if con:
+                # We can also close the connection if we are done with it.
+                # Just be sure any changes have been committed or they will be lost.
+                con.close()
 
 
 def sqlOut(mydb_path,tableName):
@@ -218,7 +217,38 @@ def sqlOut(mydb_path,tableName):
             # We can also close the connection if we are done with it.
             # Just be sure any changes have been committed or they will be lost.
             con.close()
+def sqlRequest():
+    print('sqlRequest')
+    try:
+        con = sqlite3.connect(mydb_path)
+        cur= con.cursor()
+        for row in cur.execute('SELECT * FROM TGroups GROUP BY groupID '):
+            print (row)
+        
+        #for row in cur.execute('''DELETE FROM TGroups
+        #                         WHERE groupID IN(
+        #                        SELECT * FROM TGroups GROUP BY groupID) '''):
+            print (row)
+        
+            
+        print('-------------------------\n')    
+        
+        for row in cur.execute('SELECT * FROM TGroups ORDER BY groupID '):
+            print (row)
+        #cur.execute('''DELETE FROM TGroups WHERE id NOT IN
+    #(SELECT MAX(id) FROM table GROUP BY date);''')
+        
+    #    DELETE FROM table WHERE rowid NOT IN
+#(SELECT MAX(rowid) FROM table GROUP BY date);
+        
+    except sqlite3.Error as e:
+        print ("Error %s:" % e.args[0])
 
+    finally:
+        if con:
+            # We can also close the connection if we are done with it.
+            # Just be sure any changes have been committed or they will be lost.
+            con.close()
 #----------------------------------------------------------------------------------------
 proxy = {'http':'127.0.0.1:3128', 'https':'127.0.0.1:3128'}
 proxy = None
@@ -234,16 +264,20 @@ file = ['./1.jpg',None,None]
 
 found = group_search(['коты', 'котята', 'кошечки'], params) #поиск групп   
 
-for l in found:
-    print(l[0],l[1] ,'\n')
+#for l in found:
+#    print(l[0],l[1] ,'\n')
 mydb_path='1.db'# BD name
 listOfGroup=found#list of found groups        
-listOfGroup=[]
+#listOfGroup=[]
 sqlInit(mydb_path,listOfGroup)
 
 #lis=sqlOut(mydb_path,'TGroups')
 #for l in lis:
 #    print(l)
+
+sqlRequest()
+
+
     
 type='photo'
 #found=VkUpload(file, type)№загрузка фото
